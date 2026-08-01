@@ -33,7 +33,7 @@
         </div>
         <div>
           <h1 class="brand-title">3DPrint Calc</h1>
-          <p class="brand-tagline">Calculadora de Precios y Cotización 3D</p>
+          <p class="brand-tagline">Calculadora de Precios y Slicing en Tiempo Real</p>
         </div>
       </div>
 
@@ -99,12 +99,23 @@
                 </button>
               </div>
             </div>
+
+            <!-- IMPORTED MODEL BANNER -->
             <div id="imported-model-banner" class="hidden" style="padding: 0.75rem; background: rgba(6, 182, 212, 0.1); border: 1px solid var(--secondary); border-radius: 8px; margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
               <i data-lucide="check-circle" style="color: var(--secondary);"></i>
-              <div>
+              <div style="flex: 1;">
                 <strong id="imported-title" style="display: block; font-size: 0.9rem;"></strong>
                 <span id="imported-source" style="font-size: 0.75rem; color: var(--text-muted);"></span>
               </div>
+            </div>
+
+            <!-- MULTI STL SELECTOR DROPDOWN -->
+            <div id="stl-selector-group" class="form-group hidden" style="margin-top: 1rem;">
+              <label class="form-label" for="stl-file-select">
+                <span>Pieza .STL a analizar:</span>
+                <span id="stl-file-count-badge" style="color: var(--secondary); font-size: 0.8rem; font-weight: 700;"></span>
+              </label>
+              <select id="stl-file-select" class="form-select"></select>
             </div>
           </div>
 
@@ -118,6 +129,19 @@
                 <i data-lucide="grid" style="width: 16px;"></i>
               </button>
             </div>
+          </div>
+
+          <!-- 3D MODEL PREVIEW COLOR PICKER & STATUS -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Color 3D:</span>
+              <button type="button" class="color-picker-dot active" data-color="0x6366f1" style="background: #6366f1;" title="Indigo"></button>
+              <button type="button" class="color-picker-dot" data-color="0x06b6d4" style="background: #06b6d4;" title="Cyan"></button>
+              <button type="button" class="color-picker-dot" data-color="0x10b981" style="background: #10b981;" title="Esmeralda"></button>
+              <button type="button" class="color-picker-dot" data-color="0xf59e0b" style="background: #f59e0b;" title="Ámbar"></button>
+              <button type="button" class="color-picker-dot" data-color="0xec4899" style="background: #ec4899;" title="Rosa"></button>
+            </div>
+            <div id="viewer-status" style="font-size: 0.75rem; color: var(--secondary); font-weight: 600;">Sin modelo cargado</div>
           </div>
 
           <!-- STATS GRID -->
@@ -230,7 +254,7 @@
                   <label class="form-label" for="kwh-price">Costo Energía (kWh)</label>
                   <div class="input-suffix">
                     <input type="number" id="kwh-price" class="form-input" value="0.15" step="0.01">
-                    <span class="suffix-tag">$/kWh</span>
+                    <span class="suffix-tag" id="curr-tag-2">$/kWh</span>
                   </div>
                 </div>
 
@@ -238,7 +262,7 @@
                   <label class="form-label" for="wear-rate">Desgaste de Máquina</label>
                   <div class="input-suffix">
                     <input type="number" id="wear-rate" class="form-input" value="0.25" step="0.05">
-                    <span class="suffix-tag">$/hora</span>
+                    <span class="suffix-tag" id="curr-tag-3">$/hora</span>
                   </div>
                 </div>
 
@@ -254,7 +278,7 @@
                   <label class="form-label" for="labor-rate">Valor Hora Mano de Obra</label>
                   <div class="input-suffix">
                     <input type="number" id="labor-rate" class="form-input" value="12" step="1">
-                    <span class="suffix-tag">$/hora</span>
+                    <span class="suffix-tag" id="curr-tag-4">$/hora</span>
                   </div>
                 </div>
 

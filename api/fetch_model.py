@@ -12,10 +12,27 @@ def fetch_url(url, headers=None):
         }
     req = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=12) as response:
             return response.read().decode('utf-8', errors='ignore')
     except Exception as e:
         return None
+
+def extract_stl_files_from_html(html, base_url):
+    files = []
+    stl_matches = re.findall(r'href=["\'](https?://[^"\']+\.stl[^"\']*)["\']', html, re.IGNORECASE)
+    for match in stl_matches:
+        filename = match.split('/')[-1].split('?')[0]
+        filename = urllib.parse.unquote(filename)
+        if not any(f['url'] == match for f in files):
+            files.append({"name": filename, "url": match})
+
+    tv_matches = re.findall(r'href=["\'](/download:\d+)["\']', html)
+    for m in tv_matches:
+        full_url = urllib.parse.urljoin("https://www.thingiverse.com", m)
+        if not any(f['url'] == full_url for f in files):
+            files.append({"name": f"Modelo_{m.replace('/', '')}.stl", "url": full_url})
+
+    return files
 
 def parse_thingiverse(url):
     match = re.search(r'thing:(\d+)', url)
@@ -31,12 +48,32 @@ def parse_thingiverse(url):
     img_match = re.search(r'<meta property="og:image" content="(.*?)"', html)
     image = img_match.group(1) if img_match else None
     
+    files = []
+    if thing_id:
+        api_url = f"https://api.thingiverse.com/things/{thing_id}/files"
+        api_json = fetch_url(api_url)
+        if api_json:
+            try:
+                data = json.loads(api_json)
+                if isinstance(data, list):
+                    for f in data:
+                        if f.get('name', '').lower().endswith('.stl'):
+                            download_url = f.get('download_url') or f.get('public_url') or f.get('url')
+                            if download_url:
+                                files.append({"name": f['name'], "url": download_url})
+            except Exception:
+                pass
+
+    if not files:
+        files = extract_stl_files_from_html(html, url)
+
     return {
         "source": "Thingiverse",
         "title": title,
         "image": image,
         "url": url,
-        "id": thing_id
+        "id": thing_id,
+        "files": files
     }
 
 def parse_printables(url):
@@ -50,11 +87,14 @@ def parse_printables(url):
     img_match = re.search(r'<meta property="og:image" content="(.*?)"', html)
     image = img_match.group(1) if img_match else None
     
+    files = extract_stl_files_from_html(html, url)
+
     return {
         "source": "Printables",
         "title": title,
         "image": image,
-        "url": url
+        "url": url,
+        "files": files
     }
 
 def parse_cults3d(url):
@@ -68,11 +108,14 @@ def parse_cults3d(url):
     img_match = re.search(r'<meta property="og:image" content="(.*?)"', html)
     image = img_match.group(1) if img_match else None
     
+    files = extract_stl_files_from_html(html, url)
+
     return {
         "source": "Cults3D",
         "title": title,
         "image": image,
-        "url": url
+        "url": url,
+        "files": files
     }
 
 def process_url(url):
@@ -92,11 +135,13 @@ def process_url(url):
             title = title_match.group(1).strip() if title_match else "Modelo 3D"
             img_match = re.search(r'<meta property="og:image" content="(.*?)"', html)
             image = img_match.group(1) if img_match else None
+            files = extract_stl_files_from_html(html, url)
             return {
                 "source": "Web",
                 "title": title,
                 "image": image,
-                "url": url
+                "url": url,
+                "files": files
             }
         return {"error": "No se pudo extraer información del enlace"}
 

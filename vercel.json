@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/fetch-model", "destination": "/api/index.py" }
+    { "source": "/api/fetch-model", "destination": "/api/index.py" },
+    { "source": "/api/fetch-stl-proxy", "destination": "/api/fetch_stl_proxy.py" }
   ]
 }
