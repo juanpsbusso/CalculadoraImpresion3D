@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora de Impresión 3D | Cotizador y Precios de Venta</title>
-  <meta name="description" content="Calcula automáticamente el valor de venta de tus impresiones 3D a partir de un archivo STL o un enlace de Thingiverse, Printables o Cults3D.">
+  <title>Calculadora para Impresión 3D by Juan Pablo Sánchez</title>
+  <meta name="description" content="Calculadora para Impresión 3D por Juan Pablo Sánchez. Cotizador y Slicing en tiempo real para archivos STL y enlaces de Thingiverse, Printables y Cults3D.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,145 +32,238 @@
           <i data-lucide="box"></i>
         </div>
         <div>
-          <h1 class="brand-title">3DPrint Calc</h1>
-          <p class="brand-tagline">Calculadora de Precios y Slicing en Tiempo Real</p>
+          <h1 class="brand-title">Calculadora para Impresión 3D</h1>
+          <p class="brand-tagline">by Juan Pablo Sánchez</p>
         </div>
       </div>
 
-      <div class="currency-badge">
-        <i data-lucide="coins" style="color: var(--secondary); width: 18px;"></i>
-        <select id="currency-select" title="Seleccionar Moneda">
-          <option value="USD">USD ($)</option>
-          <option value="ARS">ARS ($)</option>
-          <option value="EUR">EUR (€)</option>
-          <option value="MXN">MXN ($)</option>
-          <option value="CLP">CLP ($)</option>
-          <option value="COP">COP ($)</option>
-          <option value="PEN">PEN (S/)</option>
-        </select>
+      <div class="header-actions">
+        <!-- THEME TOGGLE BUTTON -->
+        <button type="button" id="btn-theme-toggle" class="theme-toggle-btn" title="Cambiar Tema Claro / Oscuro">
+          <i data-lucide="sun" id="theme-icon" style="width: 16px;"></i>
+          <span id="theme-btn-text">Claro</span>
+        </button>
+
+        <!-- CURRENCY SELECTOR -->
+        <div class="currency-badge">
+          <i data-lucide="coins" style="color: var(--secondary); width: 16px;"></i>
+          <select id="currency-select" title="Seleccionar Moneda">
+            <option value="ARS" selected>ARS ($)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="MXN">MXN ($)</option>
+            <option value="CLP">CLP ($)</option>
+            <option value="COP">COP ($)</option>
+            <option value="PEN">PEN (S/)</option>
+          </select>
+        </div>
       </div>
     </header>
 
-    <!-- MAIN GRID -->
+    <!-- MAIN GRID (3 COLUMNS ON DESKTOP FIT TO SCREEN) -->
     <div class="app-grid">
 
-      <!-- LEFT COLUMN: MODEL INPUT & PARAMETERS -->
-      <div class="col-left">
+      <!-- COLUMN 1: MODEL IMPORTER & 3D VIEWER -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i data-lucide="upload-cloud"></i>
+            1. Cargar Modelo 3D
+          </h2>
+        </div>
 
-        <!-- CARD 1: MODEL IMPORTER -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <i data-lucide="upload-cloud"></i>
-              1. Cargar Modelo 3D
-            </h2>
-          </div>
+        <!-- TABS -->
+        <div class="tab-group">
+          <button type="button" class="tab-btn active" id="tab-stl">
+            <i data-lucide="file-box"></i> Archivo .STL
+          </button>
+          <button type="button" class="tab-btn" id="tab-url">
+            <i data-lucide="link"></i> Enlace Web
+          </button>
+        </div>
 
-          <!-- TABS -->
-          <div class="tab-group">
-            <button type="button" class="tab-btn active" id="tab-stl">
-              <i data-lucide="file-box"></i> Archivo .STL
-            </button>
-            <button type="button" class="tab-btn" id="tab-url">
-              <i data-lucide="link"></i> Enlace Web
-            </button>
-          </div>
-
-          <!-- TAB CONTENT 1: FILE DROPZONE -->
-          <div id="panel-stl">
-            <div class="dropzone" id="dropzone">
-              <input type="file" id="stl-file-input" accept=".stl" style="display: none;">
-              <div class="dropzone-icon">
-                <i data-lucide="file-up" style="width: 28px; height: 28px;"></i>
-              </div>
-              <div class="dropzone-title">Arrastra tu archivo .STL aquí</div>
-              <div class="dropzone-sub">o haz clic para explorar tu dispositivo (Max 100MB)</div>
+        <!-- TAB CONTENT 1: FILE DROPZONE -->
+        <div id="panel-stl">
+          <input type="file" id="stl-file-input" accept=".stl" style="display: none;">
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">
+              <i data-lucide="file-up" style="width: 22px; height: 22px;"></i>
             </div>
-          </div>
-
-          <!-- TAB CONTENT 2: URL IMPORTER -->
-          <div id="panel-url" class="hidden">
-            <div class="form-group">
-              <label class="form-label" for="model-url-input">Pega el link de Thingiverse, Printables o Cults3D</label>
-              <div style="display: flex; gap: 8px;">
-                <input type="text" id="model-url-input" class="form-input" placeholder="https://www.thingiverse.com/thing:123456">
-                <button type="button" id="btn-import-url" class="btn-primary" style="width: auto; padding: 0 1.25rem;">
-                  <i data-lucide="search"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- IMPORTED MODEL BANNER -->
-            <div id="imported-model-banner" class="hidden" style="padding: 0.75rem; background: rgba(6, 182, 212, 0.1); border: 1px solid var(--secondary); border-radius: 8px; margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
-              <i data-lucide="check-circle" style="color: var(--secondary);"></i>
-              <div style="flex: 1;">
-                <strong id="imported-title" style="display: block; font-size: 0.9rem;"></strong>
-                <span id="imported-source" style="font-size: 0.75rem; color: var(--text-muted);"></span>
-              </div>
-            </div>
-
-            <!-- MULTI STL SELECTOR DROPDOWN -->
-            <div id="stl-selector-group" class="form-group hidden" style="margin-top: 1rem;">
-              <label class="form-label" for="stl-file-select">
-                <span>Pieza .STL a analizar:</span>
-                <span id="stl-file-count-badge" style="color: var(--secondary); font-size: 0.8rem; font-weight: 700;"></span>
-              </label>
-              <select id="stl-file-select" class="form-select"></select>
-            </div>
-          </div>
-
-          <!-- 3D VIEWER CONTAINER -->
-          <div class="viewer-container" id="viewer-container">
-            <div class="viewer-toolbar">
-              <button type="button" class="btn-icon" id="btn-reset-cam" title="Reiniciar Cámara">
-                <i data-lucide="rotate-ccw" style="width: 16px;"></i>
-              </button>
-              <button type="button" class="btn-icon" id="btn-wireframe" title="Modo Malla/Sólido">
-                <i data-lucide="grid" style="width: 16px;"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- 3D MODEL PREVIEW COLOR PICKER & STATUS -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Color 3D:</span>
-              <button type="button" class="color-picker-dot active" data-color="0x6366f1" style="background: #6366f1;" title="Indigo"></button>
-              <button type="button" class="color-picker-dot" data-color="0x06b6d4" style="background: #06b6d4;" title="Cyan"></button>
-              <button type="button" class="color-picker-dot" data-color="0x10b981" style="background: #10b981;" title="Esmeralda"></button>
-              <button type="button" class="color-picker-dot" data-color="0xf59e0b" style="background: #f59e0b;" title="Ámbar"></button>
-              <button type="button" class="color-picker-dot" data-color="0xec4899" style="background: #ec4899;" title="Rosa"></button>
-            </div>
-            <div id="viewer-status" style="font-size: 0.75rem; color: var(--secondary); font-weight: 600;">Sin modelo cargado</div>
-          </div>
-
-          <!-- STATS GRID -->
-          <div class="stats-badge-grid">
-            <div class="stat-box">
-              <div class="stat-label">Dimensiones</div>
-              <div class="stat-value" id="stat-dim">0 x 0 x 0 mm</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Volumen</div>
-              <div class="stat-value" id="stat-vol">0 cm³</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Peso Estimado</div>
-              <div class="stat-value" id="stat-weight">0 g</div>
-            </div>
+            <div class="dropzone-title">Arrastra tu archivo .STL aquí</div>
+            <div class="dropzone-sub">o haz clic para buscarlo (Max 100MB)</div>
           </div>
         </div>
 
-        <!-- CARD 2: PARÁMETROS DE IMPRESIÓN -->
-        <div class="card" style="margin-top: 1.5rem;">
-          <div class="card-header">
-            <h2 class="card-title">
-              <i data-lucide="sliders"></i>
-              2. Parámetros de Impresión
-            </h2>
+        <!-- TAB CONTENT 2: URL IMPORTER -->
+        <div id="panel-url" class="hidden">
+          <div class="form-group">
+            <label class="form-label" for="model-url-input">Link de Thingiverse, Printables o Cults3D</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="text" id="model-url-input" class="form-input" placeholder="https://cults3d.com/es/modelo-3d/artilugios/beach-drink-holder-tray-organizer">
+              <button type="button" id="btn-import-url" class="btn-primary" style="width: auto; padding: 0 1rem;">
+                <i data-lucide="search"></i>
+              </button>
+            </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+          <!-- IMPORTED MODEL BANNER -->
+          <div id="imported-model-banner" class="hidden" style="padding: 0.5rem 0.75rem; background: rgba(6, 182, 212, 0.1); border: 1px solid var(--secondary); border-radius: 8px; margin-top: 0.4rem; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="check-circle" style="color: var(--secondary); width: 16px;"></i>
+              <div>
+                <strong id="imported-title" style="display: block; font-size: 0.85rem;"></strong>
+                <span id="imported-source" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+              </div>
+            </div>
+            <button type="button" id="btn-open-multi-modal" class="btn-secondary hidden" style="width: auto; margin-top: 0; padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+              <i data-lucide="layers" style="width: 12px;"></i> Piezas
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D VIEWER CONTAINER WITH PAN/ZOOM CAPABILITY -->
+        <div class="viewer-container" id="viewer-container" title="Usa los botones o arrastra con clic izquierdo para rotar/mover">
+          <div class="viewer-toolbar">
+            <button type="button" class="btn-icon active" id="btn-mode-rotate" title="Modo Rotar (Clic Izquierdo gira)">
+              <i data-lucide="rotate-3d" style="width: 14px;"></i>
+            </button>
+            <button type="button" class="btn-icon" id="btn-mode-pan" title="Modo Mover Espacio (Clic Izquierdo desplaza)">
+              <i data-lucide="move" style="width: 14px;"></i>
+            </button>
+
+            <!-- DIRECTIONAL PAN BUTTONS -->
+            <button type="button" class="btn-icon" id="btn-pan-left" title="Mover Espacio a la Izquierda (←)">
+              <i data-lucide="arrow-left" style="width: 14px;"></i>
+            </button>
+            <button type="button" class="btn-icon" id="btn-pan-right" title="Mover Espacio a la Derecha (→)">
+              <i data-lucide="arrow-right" style="width: 14px;"></i>
+            </button>
+            <button type="button" class="btn-icon" id="btn-pan-up" title="Mover Espacio Arriba (↑)">
+              <i data-lucide="arrow-up" style="width: 14px;"></i>
+            </button>
+            <button type="button" class="btn-icon" id="btn-pan-down" title="Mover Espacio Abajo (↓)">
+              <i data-lucide="arrow-down" style="width: 14px;"></i>
+            </button>
+
+            <button type="button" class="btn-icon" id="btn-zoom-in" title="Acercar Zoom (+)">
+              <i data-lucide="zoom-in" style="width: 14px;"></i>
+            </button>
+            <button type="button" class="btn-icon" id="btn-zoom-out" title="Alejar Zoom (-)">
+              <i data-lucide="zoom-out" style="width: 14px;"></i>
+            </button>
+            <button type="button" class="btn-icon" id="btn-wireframe" title="Malla/Sólido"><i data-lucide="grid" style="width: 14px;"></i></button>
+            <button type="button" class="btn-icon" id="btn-reset-cam" title="Reiniciar Vista"><i data-lucide="rotate-ccw" style="width: 14px;"></i></button>
+          </div>
+        </div>
+
+        <!-- COLOR PICKER & STATUS -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Color 3D:</span>
+            <button type="button" class="color-picker-dot active" data-color="0x6366f1" style="background: #6366f1;"></button>
+            <button type="button" class="color-picker-dot" data-color="0x06b6d4" style="background: #06b6d4;"></button>
+            <button type="button" class="color-picker-dot" data-color="0x10b981" style="background: #10b981;"></button>
+            <button type="button" class="color-picker-dot" data-color="0xf59e0b" style="background: #f59e0b;"></button>
+            <button type="button" class="color-picker-dot" data-color="0xec4899" style="background: #ec4899;"></button>
+          </div>
+          <div id="viewer-status" style="font-size: 0.75rem; color: var(--secondary); font-weight: 600;">Sin modelo cargado</div>
+        </div>
+        <div id="viewer-sim-badge" class="hidden" style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 3px; font-style: italic;">
+          ℹ️ Representación 3D del volumen extraído para cotización
+        </div>
+
+        <!-- AESTHETIC ROTATION SLIDERS -->
+        <div style="display: flex; gap: 8px; margin-top: 0.5rem; align-items: center; background: var(--bg-input); padding: 0.4rem 0.6rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="compass" style="width: 12px; color: var(--secondary);"></i> Ángulo:
+          </span>
+          <div style="display: flex; gap: 6px; flex: 1; align-items: center;">
+            <label style="font-size: 0.7rem; color: var(--text-sub); font-weight: 700;" for="rot-angle-x">X</label>
+            <input type="range" id="rot-angle-x" min="0" max="360" value="0" style="flex: 1;">
+            <label style="font-size: 0.7rem; color: var(--text-sub); font-weight: 700;" for="rot-angle-y">Y</label>
+            <input type="range" id="rot-angle-y" min="0" max="360" value="0" style="flex: 1;">
+            <label style="font-size: 0.7rem; color: var(--text-sub); font-weight: 700;" for="rot-angle-z">Z</label>
+            <input type="range" id="rot-angle-z" min="0" max="360" value="0" style="flex: 1;">
+          </div>
+        </div>
+
+        <!-- MODEL SCALE CONTROL -->
+        <div class="form-group" style="margin-top: 0.5rem; background: var(--bg-input); padding: 0.5rem 0.7rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 0;">
+          <div class="form-label" style="margin-bottom: 0.2rem;">
+            <span style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem;">
+              <i data-lucide="maximize-2" style="width: 13px; color: var(--secondary);"></i> Escala de la Pieza
+            </span>
+            <span id="scale-val-label" style="color: var(--secondary); font-weight: 700; font-size: 0.75rem;">100%</span>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <div class="input-suffix" style="flex: 1;">
+              <input type="number" id="scale-input" class="form-input" value="100" min="5" max="1000" step="5" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;">
+              <span class="suffix-tag" style="font-size: 0.7rem;">%</span>
+            </div>
+            <button type="button" class="btn-secondary scale-preset-btn" data-scale="50" style="width: auto; padding: 0.35rem 0.5rem; margin-top: 0; font-size: 0.75rem;">50%</button>
+            <button type="button" class="btn-secondary scale-preset-btn" data-scale="100" style="width: auto; padding: 0.35rem 0.5rem; margin-top: 0; font-size: 0.75rem;">100%</button>
+            <button type="button" class="btn-secondary scale-preset-btn" data-scale="150" style="width: auto; padding: 0.35rem 0.5rem; margin-top: 0; font-size: 0.75rem;">150%</button>
+            <button type="button" class="btn-secondary scale-preset-btn" data-scale="200" style="width: auto; padding: 0.35rem 0.5rem; margin-top: 0; font-size: 0.75rem;">200%</button>
+          </div>
+        </div>
+
+        <!-- STATS GRID -->
+        <div class="stats-badge-grid">
+          <div class="stat-box">
+            <div class="stat-label">Dimensiones</div>
+            <div class="stat-value" id="stat-dim">0 x 0 x 0 mm</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Volumen</div>
+            <div class="stat-value" id="stat-vol">0 cm³</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Peso Estimado</div>
+            <div class="stat-value" id="stat-weight">0 g</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: PARAMETERS PANELS -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i data-lucide="sliders"></i>
+            2. Parámetros de Impresión
+          </h2>
+        </div>
+
+        <!-- PARAMETER SUB-TABS -->
+        <div class="tab-group">
+          <button type="button" class="tab-btn active" id="tab-param-mat">
+            <i data-lucide="package"></i> Filamento y Tiempo
+          </button>
+          <button type="button" class="tab-btn" id="tab-param-ops">
+            <i data-lucide="zap"></i> Costos Operativos
+          </button>
+        </div>
+
+        <!-- PANEL A: FILAMENT & SLICER SETTINGS -->
+        <div id="panel-param-mat">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;">
+            
+            <!-- PRINTER PRESET SELECT -->
+            <div class="form-group" style="grid-column: 1 / -1; background: rgba(6, 182, 212, 0.08); padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid rgba(6, 182, 212, 0.3); margin-bottom: 0.25rem;">
+              <label class="form-label" for="printer-select" style="margin-bottom: 0.2rem;">
+                <span style="display: flex; align-items: center; gap: 4px; color: var(--secondary); font-weight: 700; font-size: 0.8rem;">
+                  <i data-lucide="printer" style="width: 14px;"></i> Modelo de Impresora 3D
+                </span>
+              </label>
+              <select id="printer-select" class="form-select" style="font-weight: 600; padding: 0.4rem 0.6rem;">
+                <option value="ender3_v3_se" selected>Creality Ender 3 V3 SE / KE (~250 mm/s)</option>
+                <option value="ender3">Ender 3 / CR-10 / Estándar (~50 mm/s)</option>
+                <option value="bambu_p1_x1">Bambu Lab X1-C / P1S / A1 (~250 mm/s)</option>
+                <option value="creality_k1">Creality K1 / K1 Max (~200 mm/s)</option>
+                <option value="prusa_mk4">Prusa i3 MK3S+ / MK4 (~100 mm/s)</option>
+                <option value="elegoo_neptune4">Elegoo Neptune 4 / Anycubic Kobra 2 (~150 mm/s)</option>
+                <option value="custom">Personalizada (Ajuste Manual)</option>
+              </select>
+            </div>
 
             <!-- Material Preset -->
             <div class="form-group">
@@ -188,15 +281,15 @@
             <div class="form-group">
               <label class="form-label" for="spool-price">Costo Filamento / Kg</label>
               <div class="input-suffix">
-                <input type="number" id="spool-price" class="form-input" value="20" step="0.5" min="0">
+                <input type="number" id="spool-price" class="form-input" value="25000" step="500" min="0">
                 <span class="suffix-tag" id="curr-tag-1">$/kg</span>
               </div>
             </div>
 
             <!-- Infill slider -->
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 0.3rem;">
               <div class="form-label">
-                <span>Relleno (Infill)</span>
+                <span>Porcentaje de Relleno (Infill)</span>
                 <span id="infill-val-label" style="color: var(--secondary); font-weight: 700;">20%</span>
               </div>
               <div class="slider-container">
@@ -204,11 +297,26 @@
               </div>
             </div>
 
+            <!-- SUPPORTS OPTION (SOPORTES) -->
+            <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 0.4rem;">
+              <label class="form-label" for="support-select" style="margin-bottom: 0.2rem;">
+                <span style="display: flex; align-items: center; gap: 4px; color: var(--accent-warning);">
+                  <i data-lucide="layers" style="width: 14px;"></i> ¿Incluye Soportes de Impresión?
+                </span>
+              </label>
+              <select id="support-select" class="form-select" style="font-weight: 600;">
+                <option value="none" selected>Sin Soportes (0% extra)</option>
+                <option value="light">Soportes Árbol / Livianos (+15% extra)</option>
+                <option value="medium">Soportes Estándar (+30% extra)</option>
+                <option value="heavy">Soportes Densos / Complejos (+50% extra)</option>
+              </select>
+            </div>
+
             <!-- Weight Override -->
             <div class="form-group">
               <label class="form-label" for="weight-input">Peso de la Pieza</label>
               <div class="input-suffix">
-                <input type="number" id="weight-input" class="form-input" value="50" min="0" step="1">
+                <input type="number" id="weight-input" class="form-input" value="41" min="0" step="1">
                 <span class="suffix-tag">gramos</span>
               </div>
             </div>
@@ -216,9 +324,9 @@
             <!-- Print Time Hours & Minutes -->
             <div class="form-group">
               <label class="form-label">Tiempo de Impresión</label>
-              <div style="display: flex; gap: 8px;">
+              <div style="display: flex; gap: 6px;">
                 <div class="input-suffix" style="flex: 1;">
-                  <input type="number" id="time-hours" class="form-input" value="2" min="0" step="1">
+                  <input type="number" id="time-hours" class="form-input" value="1" min="0" step="1">
                   <span class="suffix-tag">hs</span>
                 </div>
                 <div class="input-suffix" style="flex: 1;">
@@ -229,184 +337,267 @@
             </div>
 
           </div>
+        </div>
 
-          <!-- ADVANCED ACCORDION CONFIG -->
-          <div class="accordion" style="margin-top: 1.25rem;">
-            <div class="accordion-header" id="acc-header">
-              <span style="display: flex; align-items: center; gap: 6px;">
-                <i data-lucide="settings" style="width: 16px; color: var(--secondary);"></i>
-                Configuración Avanzada (Luz, Desgaste y Mano de Obra)
-              </span>
-              <i data-lucide="chevron-down" id="acc-icon" style="width: 18px;"></i>
-            </div>
-            <div class="accordion-body">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-                
-                <div class="form-group">
-                  <label class="form-label" for="printer-watts">Consumo Impresora</label>
-                  <div class="input-suffix">
-                    <input type="number" id="printer-watts" class="form-input" value="200">
-                    <span class="suffix-tag">Watts</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="kwh-price">Costo Energía (kWh)</label>
-                  <div class="input-suffix">
-                    <input type="number" id="kwh-price" class="form-input" value="0.15" step="0.01">
-                    <span class="suffix-tag" id="curr-tag-2">$/kWh</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="wear-rate">Desgaste de Máquina</label>
-                  <div class="input-suffix">
-                    <input type="number" id="wear-rate" class="form-input" value="0.25" step="0.05">
-                    <span class="suffix-tag" id="curr-tag-3">$/hora</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="labor-time">Preparación y Retiro</label>
-                  <div class="input-suffix">
-                    <input type="number" id="labor-time" class="form-input" value="0.2" step="0.1">
-                    <span class="suffix-tag">horas</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="labor-rate">Valor Hora Mano de Obra</label>
-                  <div class="input-suffix">
-                    <input type="number" id="labor-rate" class="form-input" value="12" step="1">
-                    <span class="suffix-tag" id="curr-tag-4">$/hora</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="failure-rate">Margen de Fallas / Riesgo</label>
-                  <div class="input-suffix">
-                    <input type="number" id="failure-rate" class="form-input" value="10" step="1">
-                    <span class="suffix-tag">%</span>
-                  </div>
-                </div>
-
+        <!-- PANEL B: OPERATIONAL COSTS -->
+        <div id="panel-param-ops" class="hidden">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;">
+            
+            <div class="form-group">
+              <label class="form-label" for="printer-watts">Consumo Impresora</label>
+              <div class="input-suffix">
+                <input type="number" id="printer-watts" class="form-input" value="200">
+                <span class="suffix-tag">Watts</span>
               </div>
             </div>
-          </div>
 
+            <div class="form-group">
+              <label class="form-label" for="kwh-price">Costo Energía (kWh)</label>
+              <div class="input-suffix">
+                <input type="number" id="kwh-price" class="form-input" value="150" step="10">
+                <span class="suffix-tag" id="curr-tag-2">$/kWh</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="wear-rate">Desgaste Máquina</label>
+              <div class="input-suffix">
+                <input type="number" id="wear-rate" class="form-input" value="80" step="10">
+                <span class="suffix-tag" id="curr-tag-3">$/hora</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="labor-time">Preparación y Retiro</label>
+              <div class="input-suffix">
+                <input type="number" id="labor-time" class="form-input" value="0.2" step="0.1">
+                <span class="suffix-tag">horas</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="labor-rate">Valor Hora Mano de Obra</label>
+              <div class="input-suffix">
+                <input type="number" id="labor-rate" class="form-input" value="2500" step="100">
+                <span class="suffix-tag" id="curr-tag-4">$/hora</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="failure-rate">Margen de Fallas / Riesgo</label>
+              <div class="input-suffix">
+                <input type="number" id="failure-rate" class="form-input" value="10" step="1">
+                <span class="suffix-tag">%</span>
+              </div>
+            </div>
+
+          </div>
         </div>
 
       </div>
 
-      <!-- RIGHT COLUMN: RESULTS & QUOTE GENERATOR -->
-      <div class="col-right">
+      <!-- COLUMN 3: COST & PRICE RESULTS -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i data-lucide="calculator"></i>
+            3. Estrategia de Precio y Cotización
+          </h2>
+        </div>
 
-        <!-- CARD 3: COST & PRICE RESULTS -->
-        <div class="card" style="position: sticky; top: 1.5rem;">
-          <div class="card-header">
-            <h2 class="card-title">
-              <i data-lucide="calculator"></i>
-              3. Resumen de Cotización
-            </h2>
+        <!-- HERO SELLING PRICE DISPLAY -->
+        <div class="hero-price-card">
+          <div class="hero-price-title">Precio de Venta Sugerido</div>
+          <div class="hero-price-number" id="res-selling-price">$ 0</div>
+          <div class="hero-profit-badge">
+            <i data-lucide="trending-up" style="width: 12px;"></i>
+            Ganancia Neta Limpia: <span id="res-net-profit">$ 0</span>
           </div>
+        </div>
 
-          <!-- HERO SELLING PRICE DISPLAY -->
-          <div class="hero-price-card">
-            <div class="hero-price-title">Precio de Venta Sugerido</div>
-            <div class="hero-price-number" id="res-selling-price">$ 0.00</div>
-            <div class="hero-profit-badge">
-              <i data-lucide="trending-up" style="width: 14px;"></i>
-              Ganancia Neta: <span id="res-net-profit">$ 0.00</span>
+        <!-- CLEAR MATH BREAKDOWN CARD -->
+        <div style="background: var(--bg-input); padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 0.6rem; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+            <span>Costo Total Fabricar (Breakeven):</span>
+            <strong id="summary-cost-total" style="color: var(--accent-warning);">$ 0</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+            <span>Ganancia Real (Tu Bolsillo):</span>
+            <strong id="summary-net-profit" style="color: var(--accent-success);">$ 0</strong>
+          </div>
+        </div>
+
+        <!-- PRICING MODE SUB-TABS -->
+        <div class="tab-group" style="margin-bottom: 0.5rem;">
+          <button type="button" class="tab-btn active" id="tab-mode-mult">
+            <i data-lucide="trending-up"></i> Multiplicador
+          </button>
+          <button type="button" class="tab-btn" id="tab-mode-gram">
+            <i data-lucide="scale"></i> Por Gramo ($/g)
+          </button>
+          <button type="button" class="tab-btn" id="tab-mode-percent">
+            <i data-lucide="percent"></i> % Ganancia
+          </button>
+        </div>
+
+        <!-- MULTIPLIER MODE PANEL -->
+        <div id="panel-mode-mult">
+          <div class="form-group" style="margin-bottom: 0.6rem;">
+            <div class="form-label" style="margin-bottom: 0.3rem;">
+              <span>Multiplicador de Mercado</span>
+              <span id="mult-val-label" style="color: var(--accent-success); font-weight: 700;">2.0x (Estándar)</span>
+            </div>
+            <!-- REALISTIC MULTIPLIER QUICK PRESET BUTTONS -->
+            <div style="display: flex; gap: 5px; margin-bottom: 0.4rem;">
+              <button type="button" class="btn-secondary mult-preset-btn" data-mult="1.5" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Económico (1.5x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn active" data-mult="2.0" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Estándar (2x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn" data-mult="2.5" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Comercial (2.5x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn" data-mult="3.0" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Premium (3x)</button>
+            </div>
+            <div class="slider-container">
+              <input type="range" id="mult-range" min="1.0" max="5.0" value="2.0" step="0.1">
             </div>
           </div>
+        </div>
 
-          <!-- MARGIN CONFIG -->
-          <div class="form-group" style="margin-bottom: 1.25rem;">
-            <div class="form-label">
-              <span>Margen de Ganancia</span>
-              <span id="margin-val-label" style="color: var(--accent-success); font-weight: 700;">50%</span>
+        <!-- PER GRAM MODE PANEL -->
+        <div id="panel-mode-gram" class="hidden">
+          <div class="form-group" style="margin-bottom: 0.6rem;">
+            <div class="form-label" style="margin-bottom: 0.3rem;">
+              <span>Valor por Gramo de Filamento Impreso</span>
+              <span id="gram-val-label" style="color: var(--accent-success); font-weight: 700;">$ 80 / g</span>
+            </div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.4rem;">
+              <button type="button" class="btn-secondary gram-preset-btn" data-rate="50" style="flex: 1; padding: 0.35rem 0.3rem; margin-top: 0; font-size: 0.75rem;">$50/g</button>
+              <button type="button" class="btn-secondary gram-preset-btn active" data-rate="80" style="flex: 1; padding: 0.35rem 0.3rem; margin-top: 0; font-size: 0.75rem;">$80/g</button>
+              <button type="button" class="btn-secondary gram-preset-btn" data-rate="100" style="flex: 1; padding: 0.35rem 0.3rem; margin-top: 0; font-size: 0.75rem;">$100/g</button>
+            </div>
+            <div class="input-suffix">
+              <input type="number" id="gram-rate-input" class="form-input" value="80" step="5" min="10">
+              <span class="suffix-tag" id="curr-tag-gram">$/gramo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERCENTAGE MARGIN MODE PANEL -->
+        <div id="panel-mode-percent" class="hidden">
+          <div class="form-group" style="margin-bottom: 0.6rem;">
+            <div class="form-label" style="margin-bottom: 0.3rem;">
+              <span>Margen de Ganancia sobre Costo</span>
+              <span id="margin-val-label" style="color: var(--accent-success); font-weight: 700;">50% (+50%)</span>
             </div>
             <div class="slider-container">
               <input type="range" id="margin-range" min="10" max="300" value="50" step="5">
             </div>
           </div>
-
-          <!-- VISUAL STACKED BAR -->
-          <div class="visual-bar" id="visual-bar">
-            <div class="bar-segment" id="bar-material" style="background: #6366f1; width: 40%;" title="Material"></div>
-            <div class="bar-segment" id="bar-elec" style="background: #06b6d4; width: 15%;" title="Energía"></div>
-            <div class="bar-segment" id="bar-wear" style="background: #f59e0b; width: 15%;" title="Desgaste"></div>
-            <div class="bar-segment" id="bar-labor" style="background: #8b5cf6; width: 20%;" title="Mano de Obra"></div>
-            <div class="bar-segment" id="bar-risk" style="background: #ef4444; width: 10%;" title="Fallas"></div>
-          </div>
-
-          <!-- ITEMIZED COST LIST -->
-          <div class="cost-list">
-            <div class="cost-item">
-              <div class="cost-item-left">
-                <div class="cost-dot" style="background: #6366f1;"></div>
-                <span class="cost-item-title">Costo de Filamento</span>
-              </div>
-              <span class="cost-item-val" id="res-cost-mat">$ 0.00</span>
-            </div>
-
-            <div class="cost-item">
-              <div class="cost-item-left">
-                <div class="cost-dot" style="background: #06b6d4;"></div>
-                <span class="cost-item-title">Consumo Eléctrico</span>
-              </div>
-              <span class="cost-item-val" id="res-cost-elec">$ 0.00</span>
-            </div>
-
-            <div class="cost-item">
-              <div class="cost-item-left">
-                <div class="cost-dot" style="background: #f59e0b;"></div>
-                <span class="cost-item-title">Amortización / Desgaste</span>
-              </div>
-              <span class="cost-item-val" id="res-cost-wear">$ 0.00</span>
-            </div>
-
-            <div class="cost-item">
-              <div class="cost-item-left">
-                <div class="cost-dot" style="background: #8b5cf6;"></div>
-                <span class="cost-item-title">Mano de Obra / Setup</span>
-              </div>
-              <span class="cost-item-val" id="res-cost-labor">$ 0.00</span>
-            </div>
-
-            <div class="cost-item">
-              <div class="cost-item-left">
-                <div class="cost-dot" style="background: #ef4444;"></div>
-                <span class="cost-item-title">Reserva de Fallas</span>
-              </div>
-              <span class="cost-item-val" id="res-cost-risk">$ 0.00</span>
-            </div>
-
-            <div class="cost-item" style="border-top: 1px dashed var(--border-color); padding-top: 0.8rem; margin-top: 0.2rem;">
-              <div class="cost-item-left">
-                <span class="cost-item-title" style="font-weight: 700; color: var(--text-sub);">Costo Total (Mínimo Breakeven)</span>
-              </div>
-              <span class="cost-item-val" id="res-cost-total" style="color: var(--accent-warning); font-size: 1.05rem;">$ 0.00</span>
-            </div>
-          </div>
-
-          <!-- ACTION BUTTONS -->
-          <button type="button" class="btn-primary" id="btn-copy-quote">
-            <i data-lucide="copy"></i>
-            Copiar Resumen para Cliente
-          </button>
-          
-          <button type="button" class="btn-secondary" id="btn-reset-all">
-            <i data-lucide="refresh-cw"></i>
-            Restablecer Valores
-          </button>
-
         </div>
+
+        <!-- VISUAL STACKED BAR -->
+        <div class="visual-bar" id="visual-bar">
+          <div class="bar-segment" id="bar-material" style="background: #6366f1; width: 40%;" title="Material"></div>
+          <div class="bar-segment" id="bar-elec" style="background: #06b6d4; width: 15%;" title="Energía"></div>
+          <div class="bar-segment" id="bar-wear" style="background: #f59e0b; width: 15%;" title="Desgaste"></div>
+          <div class="bar-segment" id="bar-labor" style="background: #8b5cf6; width: 20%;" title="Mano de Obra"></div>
+          <div class="bar-segment" id="bar-risk" style="background: #ef4444; width: 10%;" title="Fallas"></div>
+        </div>
+
+        <!-- ITEMIZED COST LIST -->
+        <div class="cost-list">
+          <div class="cost-item">
+            <div class="cost-item-left">
+              <div class="cost-dot" style="background: #6366f1;"></div>
+              <span class="cost-item-title">Costo de Filamento</span>
+            </div>
+            <span class="cost-item-val" id="res-cost-mat">$ 0</span>
+          </div>
+
+          <div class="cost-item">
+            <div class="cost-item-left">
+              <div class="cost-dot" style="background: #06b6d4;"></div>
+              <span class="cost-item-title">Consumo Eléctrico</span>
+            </div>
+            <span class="cost-item-val" id="res-cost-elec">$ 0</span>
+          </div>
+
+          <div class="cost-item">
+            <div class="cost-item-left">
+              <div class="cost-dot" style="background: #f59e0b;"></div>
+              <span class="cost-item-title">Amortización / Desgaste</span>
+            </div>
+            <span class="cost-item-val" id="res-cost-wear">$ 0</span>
+          </div>
+
+          <div class="cost-item">
+            <div class="cost-item-left">
+              <div class="cost-dot" style="background: #8b5cf6;"></div>
+              <span class="cost-item-title">Mano de Obra / Setup</span>
+            </div>
+            <span class="cost-item-val" id="res-cost-labor">$ 0</span>
+          </div>
+
+          <div class="cost-item">
+            <div class="cost-item-left">
+              <div class="cost-dot" style="background: #ef4444;"></div>
+              <span class="cost-item-title">Reserva de Fallas</span>
+            </div>
+            <span class="cost-item-val" id="res-cost-risk">$ 0</span>
+          </div>
+
+          <div class="cost-item" style="border-top: 1px dashed var(--border-color); padding-top: 0.5rem; margin-top: 0.1rem;">
+            <div class="cost-item-left">
+              <span class="cost-item-title" style="font-weight: 700; color: var(--text-sub);">Costo Total Breakeven</span>
+            </div>
+            <span class="cost-item-val" id="res-cost-total" style="color: var(--accent-warning); font-size: 0.95rem;">$ 0</span>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <button type="button" class="btn-primary" id="btn-copy-quote">
+          <i data-lucide="copy"></i> Copiar Cotización
+        </button>
+        
+        <button type="button" class="btn-secondary" id="btn-reset-all">
+          <i data-lucide="refresh-cw"></i> Restablecer Valores
+        </button>
 
       </div>
 
     </div>
 
+  </div>
+
+  <!-- MULTI-STL INTERACTIVE CHOICE MODAL -->
+  <div id="multi-stl-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="modal-stl-title">Archivos STL Encontrados</h3>
+          <p class="modal-sub" id="modal-stl-sub">¿Qué pieza deseas imprimir y cotizar?</p>
+        </div>
+        <button type="button" class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+
+      <!-- FEATURED COMBINED ALL CARD -->
+      <div class="modal-all-card" id="modal-select-all-btn">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="modal-all-icon">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; color: var(--text-main);">✨ Imprimir y Cotizar Todos (Combinados)</strong>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Suma el plástico y tiempo de todos los archivos STL</span>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" style="color: var(--secondary);"></i>
+      </div>
+
+      <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0.85rem 0 0.4rem; font-weight: 700;">
+        o selecciona una pieza individual:
+      </div>
+
+      <!-- GRID OF INDIVIDUAL FILES -->
+      <div class="modal-file-list" id="modal-file-list"></div>
+    </div>
   </div>
 
   <!-- TOAST NOTIFICATION -->

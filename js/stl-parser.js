@@ -1,14 +1,10 @@
 /**
  * High-performance browser-side STL Parser & Geometry Calculator
- * Supports both Binary and ASCII STL files.
+ * Supports both Binary and ASCII STL files, plus Procedural 3D Mesh Generation for Web Models.
  */
 class STLParser {
-  /**
-   * Parse ArrayBuffer of an STL file
-   * @param {ArrayBuffer} buffer 
-   * @returns {Object} STL metadata, stats, and triangle float array
-   */
   static parse(buffer) {
+    if (!buffer || buffer.byteLength < 5) return null;
     const isBinary = this.isBinary(buffer);
     return isBinary ? this.parseBinary(buffer) : this.parseASCII(new TextDecoder().decode(buffer));
   }
@@ -57,7 +53,6 @@ class STLParser {
       const v3z = reader.getFloat32(offset + 8, true);
       offset += 12;
 
-      // Attribute byte count
       offset += 2;
 
       const pIdx = i * 9;
@@ -69,7 +64,6 @@ class STLParser {
       normals[pIdx + 3] = nx; normals[pIdx + 4] = ny; normals[pIdx + 5] = nz;
       normals[pIdx + 6] = nx; normals[pIdx + 7] = ny; normals[pIdx + 8] = nz;
 
-      // Bounding box
       minX = Math.min(minX, v1x, v2x, v3x);
       maxX = Math.max(maxX, v1x, v2x, v3x);
       minY = Math.min(minY, v1y, v2y, v3y);
@@ -77,7 +71,6 @@ class STLParser {
       minZ = Math.min(minZ, v1z, v2z, v3z);
       maxZ = Math.max(maxZ, v1z, v2z, v3z);
 
-      // Signed volume of tetrahedron formed by (0,0,0) and (v1, v2, v3)
       const v321 = v3x * v2y * v1z;
       const v231 = v2x * v3y * v1z;
       const v312 = v3x * v1y * v2z;
@@ -86,7 +79,6 @@ class STLParser {
       const v123 = v1x * v2y * v3z;
       totalVolume += (-v321 + v231 + v312 - v132 - v213 + v123) / 6.0;
 
-      // Triangle surface area (cross product of sides)
       const ax = v2x - v1x, ay = v2y - v1y, az = v2z - v1z;
       const bx = v3x - v1x, by = v3y - v1y, bz = v3z - v1z;
       const cx = ay * bz - az * by;
@@ -95,8 +87,8 @@ class STLParser {
       totalArea += 0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz);
     }
 
-    const volumeCm3 = Math.abs(totalVolume) / 1000.0; // mm3 to cm3
-    const areaCm2 = totalArea / 100.0; // mm2 to cm2
+    const volumeCm3 = Math.abs(totalVolume) / 1000.0;
+    const areaCm2 = totalArea / 100.0;
 
     return {
       faceCount,
@@ -124,7 +116,7 @@ class STLParser {
 
     const faceCount = Math.floor(vertices.length / 9);
     const positions = new Float32Array(vertices);
-    const normals = new Float32Array(positions.length); // Auto compute or zero
+    const normals = new Float32Array(positions.length);
 
     let minX = Infinity, minY = Infinity, minZ = Infinity;
     let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
@@ -172,6 +164,77 @@ class STLParser {
       boundingBox: { minX, maxX, minY, maxY, minZ, maxZ },
       volumeCm3: Math.abs(totalVolume) / 1000.0,
       areaCm2: totalArea / 100.0
+    };
+  }
+
+  /**
+   * Generates a 3D Stylized Cylinder/Container Geometry Mesh matching volume and dimensions for web models
+   */
+  static createProceduralMesh(volumeCm3 = 40, dimensions = { x: 60, y: 60, z: 40 }) {
+    const dx = dimensions.x || 60;
+    const dy = dimensions.y || 60;
+    const dz = dimensions.z || 40;
+
+    const radius = Math.min(dx, dy) / 2.0;
+    const height = dz;
+    const segments = 18;
+
+    const verts = [];
+    const normals = [];
+
+    // Helper to push triangle
+    const addTri = (v1, v2, v3) => {
+      verts.push(...v1, ...v2, ...v3);
+      // Compute normal
+      const ax = v2[0] - v1[0], ay = v2[1] - v1[1], az = v2[2] - v1[2];
+      const bx = v3[0] - v1[0], by = v3[1] - v1[1], bz = v3[2] - v1[2];
+      const nx = ay * bz - az * by;
+      const ny = az * bx - ax * bz;
+      const nz = ax * by - ay * bx;
+      const len = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1;
+      const norm = [nx/len, ny/len, nz/len];
+      normals.push(...norm, ...norm, ...norm);
+    };
+
+    const halfH = height / 2.0;
+    const topRadius = radius * 0.9;
+    const botRadius = radius;
+
+    for (let i = 0; i < segments; i++) {
+      const theta1 = (i / segments) * Math.PI * 2;
+      const theta2 = ((i + 1) / segments) * Math.PI * 2;
+
+      const cos1 = Math.cos(theta1), sin1 = Math.sin(theta1);
+      const cos2 = Math.cos(theta2), sin2 = Math.sin(theta2);
+
+      const b1 = [botRadius * cos1, -halfH, botRadius * sin1];
+      const b2 = [botRadius * cos2, -halfH, botRadius * sin2];
+      const t1 = [topRadius * cos1, halfH, topRadius * sin1];
+      const t2 = [topRadius * cos2, halfH, topRadius * sin2];
+
+      // Side Wall 2 Triangles
+      addTri(b1, b2, t2);
+      addTri(b1, t2, t1);
+
+      // Top Cap Triangle
+      addTri([0, halfH, 0], t1, t2);
+
+      // Bottom Cap Triangle
+      addTri([0, -halfH, 0], b2, b1);
+    }
+
+    const positions = new Float32Array(verts);
+    const normalsArray = new Float32Array(normals);
+    const calculatedVol = (Math.PI * radius * radius * height) / 1000.0;
+
+    return {
+      faceCount: segments * 4,
+      positions,
+      normals: normalsArray,
+      dimensions: { x: dx, y: dy, z: dz },
+      volumeCm3: volumeCm3 || calculatedVol,
+      areaCm2: (2 * Math.PI * radius * height + 2 * Math.PI * radius * radius) / 100.0,
+      isProcedural: true
     };
   }
 }

@@ -22,13 +22,13 @@ try:
 except ImportError:
     process_url = lambda url: {"error": "Módulo de API no encontrado"}
 
-PORT = 8086
+PORT = 8104
 
 class DevHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         
-        # 1. Fetch Model Metadata
+        # 1. Fetch Model Metadata & Extracted STL files
         if parsed.path in ['/api/fetch-model', '/api/fetch_model', '/api/index']:
             query_params = urllib.parse.parse_qs(parsed.query)
             url_param = query_params.get('url', [None])[0]

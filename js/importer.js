@@ -1,5 +1,5 @@
 /**
- * Web Link Importer for Thingiverse, Printables, and Cults3D
+ * Web Link & Multi-STL Importer for Thingiverse, Printables, and Cults3D
  */
 class ModelImporter {
   /**
@@ -12,22 +12,45 @@ class ModelImporter {
     }
 
     const cleanUrl = targetUrl.trim();
+    const encodedUrl = encodeURIComponent(cleanUrl);
 
-    try {
-      // Call Vercel Serverless / Local Python endpoint
-      const response = await fetch(`/api/fetch-model?url=${encodeURIComponent(cleanUrl)}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.error) {
-          return this.fallbackParse(cleanUrl, data.error);
+    const endpoints = [
+      `/api/fetch-model?url=${encodedUrl}`,
+      `/api/fetch_model?url=${encodedUrl}`,
+      `/api/index?url=${encodedUrl}`
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const response = await fetch(ep);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && !data.error) {
+            return data;
+          }
+          if (data && data.error && !data.error.includes('404')) {
+            return this.fallbackParse(cleanUrl, data.error);
+          }
         }
-        return data;
+      } catch (e) {
+        console.warn(`Endpoint ${ep} request failed:`, e);
       }
-    } catch (e) {
-      console.warn('API route not available, using client fallback', e);
     }
 
     return this.fallbackParse(cleanUrl);
+  }
+
+  /**
+   * Fetch raw STL file ArrayBuffer through backend proxy
+   * @param {string} fileUrl 
+   */
+  static async fetchStlBuffer(fileUrl) {
+    const proxyEp = `/api/fetch-stl-proxy?url=${encodeURIComponent(fileUrl)}`;
+    const res = await fetch(proxyEp);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch STL binary (HTTP ${res.status})`);
+    }
+    return await res.arrayBuffer();
   }
 
   static fallbackParse(url, apiError = null) {
@@ -37,11 +60,9 @@ class ModelImporter {
     else if (url.includes('cults3d.com')) source = 'Cults3D';
     else if (url.includes('makerworld.com')) source = 'MakerWorld';
 
-    // Extract title from URL path
     const parts = url.split('/').filter(p => p.length > 0);
     let title = parts[parts.length - 1] || 'Modelo 3D Importado';
     title = decodeURIComponent(title).replace(/[-_]/g, ' ');
-    // Capitalize title
     title = title.charAt(0).toUpperCase() + title.slice(1);
 
     return {
@@ -49,6 +70,7 @@ class ModelImporter {
       title,
       image: null,
       url,
+      files: [],
       note: apiError || 'Información importada desde el enlace'
     };
   }
