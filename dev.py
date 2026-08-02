@@ -22,7 +22,7 @@ try:
 except ImportError:
     process_url = lambda url: {"error": "Módulo de API no encontrado"}
 
-PORT = 8104
+PORT = 8107
 
 class DevHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):

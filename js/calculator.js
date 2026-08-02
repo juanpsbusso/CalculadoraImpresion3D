@@ -1,7 +1,7 @@
 /**
  * 3D Print Cost & Pricing Calculation Engine
  * Calibrated for Argentina & LATAM market standards.
- * Supports: Per-Gram Rate Pricing, Multipliers (1.5x, 2.0x, 2.5x, 3.0x), Support Material Add-on & Live Currency Conversion.
+ * Supports: Multipliers (1.5x, 2.0x, 2.5x, 3.0x), Support Material Add-on & Live Currency Conversion.
  */
 
 const MATERIAL_PRESETS = {
@@ -161,7 +161,7 @@ class PrintCalculator {
 
   /**
    * Main Pricing Calculator
-   * Supports 'multiplier' mode, 'margin' mode, and 'per_gram' mode.
+   * Supports 'multiplier' mode and 'margin' mode.
    */
   static calculate(params) {
     const {
@@ -175,10 +175,9 @@ class PrintCalculator {
       laborTimeHours = 0.2,
       laborRatePerHour = 10,
       failureRatePercent = 10,
-      pricingMode = 'multiplier', // 'multiplier', 'margin', or 'per_gram'
+      pricingMode = 'multiplier', // 'multiplier' or 'margin'
       priceMultiplier = 2.0,     // 1.5x Económico, 2.0x Estándar, 2.5x Comercial, 3.0x Premium
       profitMarginPercent = 50,
-      pricePerGramRate = 80,     // $80 ARS per gram rate shortcut
       currency = 'USD'
     } = params;
 
@@ -210,11 +209,7 @@ class PrintCalculator {
     let effectiveMultiplier = 1.0;
     let marginOnCostPercent = 0.0;
 
-    if (pricingMode === 'per_gram') {
-      sellingPrice = weightGrams * Math.max(0, pricePerGramRate);
-      effectiveMultiplier = totalCostPrice > 0 ? (sellingPrice / totalCostPrice) : 1.0;
-      marginOnCostPercent = totalCostPrice > 0 ? (((sellingPrice - totalCostPrice) / totalCostPrice) * 100.0) : 0;
-    } else if (pricingMode === 'multiplier') {
+    if (pricingMode === 'multiplier') {
       effectiveMultiplier = Math.max(1.0, priceMultiplier);
       sellingPrice = totalCostPrice * effectiveMultiplier;
       marginOnCostPercent = (effectiveMultiplier - 1.0) * 100.0;

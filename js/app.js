@@ -1,6 +1,6 @@
 /**
  * Main Application Orchestrator for Calculadora para Impresión 3D by Juan Pablo Sánchez
- * Features: Calibrated LATAM & ARS Pricing Engine, Per-Gram Rate Mode ($80/g), Real Market Multipliers (1.5x, 2.0x, 2.5x, 3.0x), Stylized 3D Web Representations & Native 3D Space Drag/Directional Pan Controls.
+ * Features: Calibrated LATAM & ARS Pricing Engine, Updated Multipliers (3x, 3.5x, 4x, 4.5x), Stylized 3D Web Representations & Native 3D Space Drag/Directional Pan Controls.
  */
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize Lucide Icons safely
@@ -32,10 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
     scalePercent: 100,
     customWeight: false,
     customTime: false,
-    pricingMode: 'multiplier', // 'multiplier', 'margin', or 'per_gram'
-    priceMultiplier: 2.0,
+    pricingMode: 'multiplier', // 'multiplier' or 'margin'
+    priceMultiplier: 3.0,
     profitMarginPercent: 50,
-    pricePerGramRate: 80,
     modelTitle: 'Pieza Impresión 3D',
     importedFiles: []
   };
@@ -147,15 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pricing Mode & Multiplier Controls
     tabModeMult: document.getElementById('tab-mode-mult'),
-    tabModeGram: document.getElementById('tab-mode-gram'),
     tabModePercent: document.getElementById('tab-mode-percent'),
     panelModeMult: document.getElementById('panel-mode-mult'),
-    panelModeGram: document.getElementById('panel-mode-gram'),
     panelModePercent: document.getElementById('panel-mode-percent'),
     multRange: document.getElementById('mult-range'),
     multValLabel: document.getElementById('mult-val-label'),
-    gramRateInput: document.getElementById('gram-rate-input'),
-    gramValLabel: document.getElementById('gram-val-label'),
     marginRange: document.getElementById('margin-range'),
     marginValLabel: document.getElementById('margin-val-label'),
     summaryCostTotal: document.getElementById('summary-cost-total'),
@@ -183,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currTag2: document.getElementById('curr-tag-2'),
     currTag3: document.getElementById('curr-tag-3'),
     currTag4: document.getElementById('curr-tag-4'),
-    currTagGram: document.getElementById('curr-tag-gram'),
     toast: document.getElementById('toast'),
     toastMsg: document.getElementById('toast-msg')
   };
@@ -266,17 +260,14 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Recalculando material de soporte');
   });
 
-  // Pricing Mode Tabs (Multiplier vs Per-Gram vs Margin)
+  // Pricing Mode Tabs (Multiplier vs Margin)
   function setPricingMode(mode) {
     state.pricingMode = mode;
     
-    [elements.tabModeMult, elements.tabModeGram, elements.tabModePercent].forEach(t => t && t.classList.remove('active'));
-    [elements.panelModeMult, elements.panelModeGram, elements.panelModePercent].forEach(p => p && p.classList.add('hidden'));
+    [elements.tabModeMult, elements.tabModePercent].forEach(t => t && t.classList.remove('active'));
+    [elements.panelModeMult, elements.panelModePercent].forEach(p => p && p.classList.add('hidden'));
 
-    if (mode === 'per_gram') {
-      if (elements.tabModeGram) elements.tabModeGram.classList.add('active');
-      if (elements.panelModeGram) elements.panelModeGram.classList.remove('hidden');
-    } else if (mode === 'margin') {
+    if (mode === 'margin') {
       if (elements.tabModePercent) elements.tabModePercent.classList.add('active');
       if (elements.panelModePercent) elements.panelModePercent.classList.remove('hidden');
     } else {
@@ -288,12 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   safeListen(elements.tabModeMult, 'click', () => setPricingMode('multiplier'));
-  safeListen(elements.tabModeGram, 'click', () => setPricingMode('per_gram'));
   safeListen(elements.tabModePercent, 'click', () => setPricingMode('margin'));
 
-  // Multiplier Engine
+  // Multiplier Engine (Updated Presets: 3x, 3.5x, 4x, 4.5x)
   function setMultiplier(multValue) {
-    state.priceMultiplier = parseFloat(multValue) || 2.0;
+    state.priceMultiplier = parseFloat(multValue) || 3.0;
     if (elements.multRange) elements.multRange.value = state.priceMultiplier;
 
     document.querySelectorAll('.mult-preset-btn').forEach(btn => {
@@ -306,10 +296,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let labelText = `${state.priceMultiplier.toFixed(1)}x`;
-    if (Math.abs(state.priceMultiplier - 1.5) < 0.1) labelText = '1.5x (Económico)';
-    else if (Math.abs(state.priceMultiplier - 2.0) < 0.1) labelText = '2.0x (Estándar)';
-    else if (Math.abs(state.priceMultiplier - 2.5) < 0.1) labelText = '2.5x (Comercial)';
-    else if (Math.abs(state.priceMultiplier - 3.0) < 0.1) labelText = '3.0x (Premium)';
+    if (Math.abs(state.priceMultiplier - 3.0) < 0.1) labelText = '3.0x (Mayorista)';
+    else if (Math.abs(state.priceMultiplier - 3.5) < 0.1) labelText = '3.5x (Estándar)';
+    else if (Math.abs(state.priceMultiplier - 4.0) < 0.1) labelText = '4.0x (Minorista)';
+    else if (Math.abs(state.priceMultiplier - 4.5) < 0.1) labelText = '4.5x (Especial)';
 
     if (elements.multValLabel) elements.multValLabel.textContent = labelText;
     recalculate();
@@ -321,39 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.mult-preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const targetMult = parseFloat(btn.getAttribute('data-mult')) || 2.0;
+      const targetMult = parseFloat(btn.getAttribute('data-mult')) || 3.0;
       setMultiplier(targetMult);
-    });
-  });
-
-  // Per Gram Engine
-  function setPerGramRate(rateVal) {
-    state.pricePerGramRate = parseFloat(rateVal) || 80;
-    if (elements.gramRateInput) elements.gramRateInput.value = state.pricePerGramRate;
-
-    const sym = (typeof CURRENCIES !== 'undefined' && CURRENCIES[state.currentCurrency]) ? CURRENCIES[state.currentCurrency].symbol : '$';
-    if (elements.gramValLabel) elements.gramValLabel.textContent = `${sym} ${state.pricePerGramRate} / g`;
-
-    document.querySelectorAll('.gram-preset-btn').forEach(btn => {
-      const val = parseFloat(btn.getAttribute('data-rate'));
-      if (Math.abs(val - state.pricePerGramRate) < 1) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-
-    recalculate();
-  }
-
-  safeListen(elements.gramRateInput, 'input', (e) => {
-    setPerGramRate(e.target.value);
-  });
-
-  document.querySelectorAll('.gram-preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const rate = parseFloat(btn.getAttribute('data-rate')) || 80;
-      setPerGramRate(rate);
     });
   });
 
@@ -451,9 +410,8 @@ document.addEventListener('DOMContentLoaded', () => {
     state.currentCurrency = settings.currency || 'ARS';
     state.theme = settings.theme || 'dark';
     state.pricingMode = settings.pricingMode || 'multiplier';
-    state.priceMultiplier = settings.priceMultiplier || 2.0;
+    state.priceMultiplier = settings.priceMultiplier || 3.0;
     state.profitMarginPercent = settings.profitMarginPercent || 50;
-    state.pricePerGramRate = settings.pricePerGramRate || 80;
     applyTheme(state.theme);
 
     if (elements.currencySelect) elements.currencySelect.value = state.currentCurrency;
@@ -967,7 +925,6 @@ document.addEventListener('DOMContentLoaded', () => {
       pricingMode: state.pricingMode,
       priceMultiplier: state.priceMultiplier,
       profitMarginPercent: state.profitMarginPercent,
-      pricePerGramRate: state.pricePerGramRate,
       currency: state.currentCurrency
     };
 
@@ -994,7 +951,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elements.currTag2) elements.currTag2.textContent = `${sym}/kWh`;
     if (elements.currTag3) elements.currTag3.textContent = `${sym}/hora`;
     if (elements.currTag4) elements.currTag4.textContent = `${sym}/hora`;
-    if (elements.currTagGram) elements.currTagGram.textContent = `${sym}/gramo`;
 
     const b = res.breakdownPercentages;
     if (elements.barMaterial) elements.barMaterial.style.width = `${b.material}%`;
@@ -1017,7 +973,6 @@ document.addEventListener('DOMContentLoaded', () => {
         pricingMode: state.pricingMode,
         priceMultiplier: state.priceMultiplier,
         profitMarginPercent: state.profitMarginPercent,
-        pricePerGramRate: state.pricePerGramRate,
         spoolPrice: calcParams.spoolPrice,
         selectedMaterial: matKey,
         infillPercent: infillVal,
@@ -1032,9 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const matName = elements.materialSelect ? elements.materialSelect.options[elements.materialSelect.selectedIndex].text.split(' (')[0] : 'PLA';
 
     let strategyText = `Multiplicador ${state.priceMultiplier.toFixed(1)}x`;
-    if (state.pricingMode === 'per_gram') {
-      strategyText = `Tarifa por gramo: ${state.pricePerGramRate} $/g`;
-    } else if (state.pricingMode === 'margin') {
+    if (state.pricingMode === 'margin') {
       strategyText = `Margen +${state.profitMarginPercent}% sobre costo`;
     }
 
@@ -1090,7 +1043,7 @@ _Calculadora para Impresión 3D by Juan Pablo Sánchez_`;
     if (elements.viewerStatus) elements.viewerStatus.textContent = 'Sin modelo cargado';
     if (elements.viewerSimBadge) elements.viewerSimBadge.classList.add('hidden');
 
-    setMultiplier(2.0);
+    setMultiplier(3.0);
     setPricingMode('multiplier');
     recalculate();
     showToast('Valores restablecidos');

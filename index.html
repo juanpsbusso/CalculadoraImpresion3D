@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora para Impresión 3D by Juan Pablo Sánchez</title>
-  <meta name="description" content="Calculadora para Impresión 3D por Juan Pablo Sánchez. Cotizador y Slicing en tiempo real para archivos STL y enlaces de Thingiverse, Printables y Cults3D.">
+  <meta name="description" content="Calculadora para Impresión 3D por Juan Pablo Sánchez. Cotizador y Slicing en tiempo real para archivos STL y enlaces de Thingiverse, Printables, Cults3D y MakerWorld.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,13 +97,18 @@
         <!-- TAB CONTENT 2: URL IMPORTER -->
         <div id="panel-url" class="hidden">
           <div class="form-group">
-            <label class="form-label" for="model-url-input">Link de Thingiverse, Printables o Cults3D</label>
+            <label class="form-label" for="model-url-input">Link de Thingiverse, Printables, Cults3D o MakerWorld</label>
             <div style="display: flex; gap: 6px;">
-              <input type="text" id="model-url-input" class="form-input" placeholder="https://cults3d.com/es/modelo-3d/artilugios/beach-drink-holder-tray-organizer">
+              <input type="text" id="model-url-input" class="form-input" placeholder="https://makerworld.com/en/models/14856-dragon-bookmark">
               <button type="button" id="btn-import-url" class="btn-primary" style="width: auto; padding: 0 1rem;">
                 <i data-lucide="search"></i>
               </button>
             </div>
+          </div>
+
+          <!-- INFORMATIVE PLATFORM NOTICE BANNER -->
+          <div style="font-size: 0.72rem; color: var(--text-muted); background: var(--bg-input); border: 1px solid var(--border-color); padding: 0.5rem 0.7rem; border-radius: var(--radius-md); margin-top: 0.4rem; line-height: 1.35;">
+            💡 <strong>Nota sobre enlaces web (Printables, Cults3D, MakerWorld):</strong> Extraemos automáticamente los títulos, archivos STL, volumen y medidas para cotizar en segundos. Para ver la malla 3D 1:1 exacta en el visor, arrastra el archivo <code>.stl</code> descargado en la pestaña "Archivo .STL".
           </div>
 
           <!-- IMPORTED MODEL BANNER -->
@@ -432,9 +437,6 @@
           <button type="button" class="tab-btn active" id="tab-mode-mult">
             <i data-lucide="trending-up"></i> Multiplicador
           </button>
-          <button type="button" class="tab-btn" id="tab-mode-gram">
-            <i data-lucide="scale"></i> Por Gramo ($/g)
-          </button>
           <button type="button" class="tab-btn" id="tab-mode-percent">
             <i data-lucide="percent"></i> % Ganancia
           </button>
@@ -445,36 +447,17 @@
           <div class="form-group" style="margin-bottom: 0.6rem;">
             <div class="form-label" style="margin-bottom: 0.3rem;">
               <span>Multiplicador de Mercado</span>
-              <span id="mult-val-label" style="color: var(--accent-success); font-weight: 700;">2.0x (Estándar)</span>
+              <span id="mult-val-label" style="color: var(--accent-success); font-weight: 700;">3.0x (Mayorista)</span>
             </div>
-            <!-- REALISTIC MULTIPLIER QUICK PRESET BUTTONS -->
+            <!-- UPDATED MULTIPLIER QUICK PRESET BUTTONS (3x, 3.5x, 4x, 4.5x) -->
             <div style="display: flex; gap: 5px; margin-bottom: 0.4rem;">
-              <button type="button" class="btn-secondary mult-preset-btn" data-mult="1.5" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Económico (1.5x)</button>
-              <button type="button" class="btn-secondary mult-preset-btn active" data-mult="2.0" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Estándar (2x)</button>
-              <button type="button" class="btn-secondary mult-preset-btn" data-mult="2.5" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Comercial (2.5x)</button>
-              <button type="button" class="btn-secondary mult-preset-btn" data-mult="3.0" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Premium (3x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn active" data-mult="3.0" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Mayorista (3x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn" data-mult="3.5" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Estándar (3.5x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn" data-mult="4.0" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Minorista (4x)</button>
+              <button type="button" class="btn-secondary mult-preset-btn" data-mult="4.5" style="flex: 1; padding: 0.35rem 0.2rem; margin-top: 0; font-size: 0.72rem;">Especial (4.5x)</button>
             </div>
             <div class="slider-container">
-              <input type="range" id="mult-range" min="1.0" max="5.0" value="2.0" step="0.1">
-            </div>
-          </div>
-        </div>
-
-        <!-- PER GRAM MODE PANEL -->
-        <div id="panel-mode-gram" class="hidden">
-          <div class="form-group" style="margin-bottom: 0.6rem;">
-            <div class="form-label" style="margin-bottom: 0.3rem;">
-              <span>Valor por Gramo de Filamento Impreso</span>
-              <span id="gram-val-label" style="color: var(--accent-success); font-weight: 700;">$ 80 / g</span>
-            </div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.4rem;">
-              <button type="button" class="btn-secondary gram-preset-btn" data-rate="50" style="flex: 1; padding: 0.35rem 0.3rem; margin-top: 0; font-size: 0.75rem;">$50/g</button>
-              <button type="button" class="btn-secondary gram-preset-btn active" data-rate="80" style="flex: 1; padding: 0.35rem 0.3rem; margin-top: 0; font-size: 0.75rem;">$80/g</button>
-              <button type="button" class="btn-secondary gram-preset-btn" data-rate="100" style="flex: 1; padding: 0.35rem 0.3rem; margin-top: 0; font-size: 0.75rem;">$100/g</button>
-            </div>
-            <div class="input-suffix">
-              <input type="number" id="gram-rate-input" class="form-input" value="80" step="5" min="10">
-              <span class="suffix-tag" id="curr-tag-gram">$/gramo</span>
+              <input type="range" id="mult-range" min="1.0" max="6.0" value="3.0" step="0.1">
             </div>
           </div>
         </div>
